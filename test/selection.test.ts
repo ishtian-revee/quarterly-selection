@@ -76,7 +76,8 @@ describe("AC5 fairness", () => {
 describe("AC6 idempotency", () => {
   it("returns the same record even if vehicles changed", () => {
     const store = new Map<string, SelectionRecord>();
-    const first = selectForQuarter(store, input());
+    const first = selectForQuarter(store, input({ vehicleIds: [...ids(20), "v0"] }));
+    expect(first.eligibleVehicleIds).toEqual(ids(20).sort());
     const again = selectForQuarter(store, input({ vehicleIds: ids(40), seed: "other" }));
     expect(again).toEqual(first);
     expect(store.size).toBe(1);
@@ -99,7 +100,7 @@ describe("AC7 no memory between quarters", () => {
   it("last quarter's pick stays eligible and can be picked again", () => {
     const store = new Map<string, SelectionRecord>();
     const q3 = selectForQuarter(store, input({ quarter: "2026-Q3", percent: 50, seed: "x3" }));
-    const q4 = selectForQuarter(store, input({ quarter: "2026-Q4", percent: 50, seed: "x4" }));
+    const q4 = selectForQuarter(store, input({ quarter: "2026-Q4", percent: 50, seed: "x4", vehicleIds: [...ids(20), "v0"] }));
     expect(q4.eligibleVehicleIds).toEqual(ids(20).sort());
     expect(q4.selectedVehicleIds.some((v) => q3.selectedVehicleIds.includes(v))).toBe(true);
   });
@@ -112,6 +113,7 @@ describe("AC8 verify", () => {
     const r = genuine();
     expect(verifySelection({ ...r, seed: "x" })).toBe(false);
     expect(verifySelection({ ...r, percent: 60 })).toBe(false);
+    expect(verifySelection({ ...r, algorithm: "other" as never })).toBe(false);
     expect(verifySelection({ ...r, eligibleVehicleIds: r.eligibleVehicleIds.filter((v) => v !== r.selectedVehicleIds[0]) })).toBe(false);
     expect(verifySelection({ ...r, selectedVehicleIds: [...r.selectedVehicleIds.slice(1), "zzz"] })).toBe(false);
   });
@@ -170,5 +172,7 @@ describe("sha256-rank-v1 known answer", () => {
   it("pins ranking and seed use", () => {
     const v = ["v3", "v1", "v2", "v5", "v4", "v1", "v6", "v7"];
     expect(computeSelection(v, 40, "abc")).toEqual(["v2", "v6", "v7"]);
+    const r = selectForQuarter(new Map(), input({ vehicleIds: v, percent: 40, seed: "abc" }));
+    expect(r.selectedVehicleIds).toEqual(["v2", "v6", "v7"]);
   });
 });

@@ -1,14 +1,16 @@
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { expect, it } from "vitest";
+import { afterAll, expect, it } from "vitest";
 
 const run = (...args: string[]) =>
   spawnSync("npm", ["run", "-s", ...args], { encoding: "utf8" });
 
+const dir = mkdtempSync(join(tmpdir(), "qs-"));
+afterAll(() => rmSync(dir, { recursive: true, force: true }));
+
 it("AC12 select twice is stable, verify VALID then INVALID after tamper", () => {
-  const dir = mkdtempSync(join(tmpdir(), "qs-"));
   const vehicles = join(dir, "v.txt");
   const store = join(dir, "store.json");
   const recFile = join(dir, "rec.json");

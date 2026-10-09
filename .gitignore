@@ -1,2 +1,5 @@
 node_modules/
 .DS_Store
+vehicles.txt
+records.json
+record.json

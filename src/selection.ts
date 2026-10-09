@@ -51,14 +51,15 @@ export function selectForQuarter(
   }
 
   const seed = a.seed ?? randomBytes(32).toString("hex");
+  const eligible = [...new Set(a.vehicleIds)].sort(cmp);
   const record: SelectionRecord = {
     companyId: a.companyId,
     quarter: a.quarter,
     percent: a.percent,
     algorithm: "sha256-rank-v1",
     seed,
-    eligibleVehicleIds: [...new Set(a.vehicleIds)].sort(cmp),
-    selectedVehicleIds: computeSelection(a.vehicleIds, a.percent, seed),
+    eligibleVehicleIds: eligible,
+    selectedVehicleIds: computeSelection(eligible, a.percent, seed),
     createdAt: new Date().toISOString(),
   };
   store.set(key, record);
@@ -67,6 +68,7 @@ export function selectForQuarter(
 
 export function verifySelection(r: SelectionRecord): boolean {
   try {
+    if (r.algorithm !== "sha256-rank-v1") return false;
     const again = computeSelection(r.eligibleVehicleIds, r.percent, r.seed);
     return again.length === r.selectedVehicleIds.length && again.every((v, i) => v === r.selectedVehicleIds[i]);
   } catch {

@@ -40,7 +40,7 @@ The seed is 32 random bytes (hex) from `crypto.randomBytes`, created once when t
 ## Auditor: reproducing a selection
 
 1. Get the stored record (`seed`, `percent`, `eligibleVehicleIds`, `selectedVehicleIds`).
-2. Check `eligibleVehicleIds` against the company's active vehicle list as of `createdAt`.
+2. Check `eligibleVehicleIds` against the company's active vehicle list as of `createdAt`. An unselected ID can be added to or removed from the snapshot without changing the pick, so this comparison is the control for that.
 3. Run `npm run -s verify -- --record record.json`; it should print `VALID`.
 4. Or recompute by hand: `k = ceil(n * percent / 100)`; for every ID compute `sha256("<seed>:<id>")` in hex; sort by that hex string ascending (ties by ID); the first `k` IDs, sorted, must equal `selectedVehicleIds`.
 
@@ -66,7 +66,7 @@ CREATE TABLE vehicle_selections (
   id                    BIGSERIAL PRIMARY KEY,
   company_id            TEXT        NOT NULL,
   quarter               TEXT        NOT NULL CHECK (quarter ~ '^\d{4}-Q[1-4]$'),
-  percent               NUMERIC     NOT NULL CHECK (percent >= 0 AND percent <= 100),
+  percent               SMALLINT    NOT NULL CHECK (percent BETWEEN 0 AND 100),
   algorithm             TEXT        NOT NULL,
   seed                  TEXT        NOT NULL,
   eligible_vehicle_ids  TEXT[]      NOT NULL,

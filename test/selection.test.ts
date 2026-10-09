@@ -116,6 +116,7 @@ describe("AC8 verify", () => {
     expect(verifySelection({ ...r, algorithm: "other" as never })).toBe(false);
     expect(verifySelection({ ...r, eligibleVehicleIds: r.eligibleVehicleIds.filter((v) => v !== r.selectedVehicleIds[0]) })).toBe(false);
     expect(verifySelection({ ...r, selectedVehicleIds: [...r.selectedVehicleIds.slice(1), "zzz"] })).toBe(false);
+    expect(verifySelection({ ...r, selectedVehicleIds: [...r.selectedVehicleIds, "zzz"] })).toBe(false);
   });
   it("false on malformed record", () => {
     expect(verifySelection({ ...genuine(), percent: NaN })).toBe(false);
@@ -138,7 +139,7 @@ describe("AC10 validation", () => {
     expect(() => selectForQuarter(store(), input({ percent: p }))).toThrow(ValidationError);
     expect(() => computeSelection(ids(3), p, "s")).toThrow(ValidationError);
   });
-  it.each(["2026-Q5", "2026-Q0", "26-Q1", "2026Q1", "2026-q1", ""])("quarter %j", (q) => {
+  it.each(["2026-Q5", "2026-Q0", "26-Q1", "2026Q1", "2026-q1", "2026-Q12", "12026-Q1", ""])("quarter %j", (q) => {
     expect(() => selectForQuarter(store(), input({ quarter: q }))).toThrow(ValidationError);
   });
   it("empty companyId", () => {

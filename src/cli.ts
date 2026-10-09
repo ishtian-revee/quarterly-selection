@@ -3,14 +3,13 @@ import { parseArgs } from "node:util";
 import { selectForQuarter, type SelectionRecord, verifySelection } from "./selection";
 
 const [cmd, ...rest] = process.argv.slice(2);
-const { values: v } = parseArgs({
-  args: rest,
-  options: Object.fromEntries(
-    ["company", "quarter", "percent", "vehicles", "store", "record"].map((n) => [n, { type: "string" as const }]),
-  ),
-});
-
 try {
+  const { values: v } = parseArgs({
+    args: rest,
+    options: Object.fromEntries(
+      ["company", "quarter", "percent", "vehicles", "store", "record"].map((n) => [n, { type: "string" as const }]),
+    ),
+  });
   if (cmd === "select") {
     const missing = ["company", "quarter", "percent", "vehicles", "store"].filter((n) => !v[n as keyof typeof v]);
     if (missing.length) throw new Error(`missing --${missing.join(", --")}`);
@@ -24,7 +23,7 @@ try {
     const record = selectForQuarter(store, {
       companyId: v.company!,
       quarter: v.quarter!,
-      percent: Number(v.percent),
+      percent: /^\d+$/.test(v.percent!) ? Number(v.percent) : NaN,
       vehicleIds,
     });
     writeFileSync(v.store!, JSON.stringify(Object.fromEntries(store), null, 2));

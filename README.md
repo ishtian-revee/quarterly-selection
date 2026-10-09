@@ -76,4 +76,4 @@ CREATE TABLE vehicle_selections (
 );
 ```
 
-Insert with `ON CONFLICT (company_id, quarter) DO NOTHING`, then read the row back and return it.
+Insert with `ON CONFLICT (company_id, quarter) DO NOTHING`, then read the row back and return it; reject if its `percent` differs.

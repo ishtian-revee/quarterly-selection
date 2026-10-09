@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, expect, it } from "vitest";
@@ -34,4 +34,17 @@ it("AC12 select twice is stable, verify VALID then INVALID after tamper", () => 
   const bad = run("verify", "--", "--record", recFile);
   expect(bad.status).toBe(1);
   expect(bad.stdout.trim()).toBe("INVALID");
+});
+
+it.each([" ", "0x19", "1e1"])("rejects --percent %j without writing a record", (p) => {
+  const store = join(dir, `bad-${p.length}.json`);
+  const vehicles = join(dir, "v.txt");
+  writeFileSync(vehicles, "a\nb\n");
+  const r = run("select", "--", "--company", "c", "--quarter", "2026-Q4", "--percent", p, "--vehicles", vehicles, "--store", store);
+  expect(r.status).toBe(2);
+  expect(existsSync(store)).toBe(false);
+});
+
+it("unknown flag exits 2", () => {
+  expect(run("verify", "--", "--bogus", "x").status).toBe(2);
 });

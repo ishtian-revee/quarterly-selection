@@ -14,7 +14,7 @@ Requirements:
 
 ## Stack
 
-TypeScript (strict), Node >= 20, Vitest for tests, tsx to run the CLI. No framework, no database. Dependencies are limited to `typescript`, `vitest`, `tsx` and `@types/node`.
+TypeScript (strict), Node >= 22.12, Vitest for tests, tsx to run the CLI. No framework, no database. Dependencies are limited to `typescript`, `vitest`, `tsx` and `@types/node`.
 
 ## Design
 
@@ -66,7 +66,7 @@ Each criterion needs at least one test that names its ID.
 - **AC7** The previous quarter's pick doesn't exclude anyone from the next quarter.
 - **AC8** `verifySelection` returns true for a genuine record and false if `seed`, `eligibleVehicleIds`, `percent` or `selectedVehicleIds` has been tampered with.
 - **AC9** 200,000 vehicles at 25% finishes in under 2 seconds.
-- **AC10** Validation errors for: percent that is NaN, below 0 or above 100; a quarter that isn't `YYYY-Q[1-4]`; an empty companyId; an empty vehicle ID.
+- **AC10** Validation errors for: percent that is NaN, not an integer, below 0 or above 100; a quarter that isn't `YYYY-Q[1-4]`; an empty companyId; an empty vehicle ID.
 - **AC11** When no seed is passed, a 64-hex-char seed is generated with `crypto.randomBytes` and stored in the record.
 - **AC12** CLI smoke test: `select` twice returns the same record, and `verify` gives `VALID`; after tampering it gives `INVALID`.
 - **AC13** README contains:

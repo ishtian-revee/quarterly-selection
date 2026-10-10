@@ -4,13 +4,15 @@ Auditable, reproducible random selection of vehicles for quarterly inspection. A
 
 ## Prerequisites
 
-Node >= 22.12, npm.
+Node >= 22.12, npm. Commands are for a macOS/Linux shell (on Windows, use WSL or Git Bash).
 
 ## Install and test
 
 ```sh
+git clone https://github.com/ishtian-revee/quarterly-selection.git
+cd quarterly-selection
 npm install
-npm test
+npm test   # 39 tests pass
 ```
 
 ## Usage
@@ -56,24 +58,3 @@ Weakness left: the operator who runs the selection could regenerate seeds until 
 
 - **Commit-reveal:** the operator publishes `sha256(seed)` before the vehicle list is frozen, then reveals the seed afterwards. Auditors check the hash matches.
 - **Public randomness beacon** (for example drand): derive the seed from a beacon value for a round published after the list is frozen, so nobody controls it.
-
-## Postgres: once per company per quarter
-
-In production the `Map` store is replaced by a table whose constraint gives the same guarantee, even with concurrent runs:
-
-```sql
-CREATE TABLE vehicle_selections (
-  id                    BIGSERIAL PRIMARY KEY,
-  company_id            TEXT        NOT NULL,
-  quarter               TEXT        NOT NULL CHECK (quarter ~ '^\d{4}-Q[1-4]$'),
-  percent               SMALLINT    NOT NULL CHECK (percent BETWEEN 0 AND 100),
-  algorithm             TEXT        NOT NULL,
-  seed                  TEXT        NOT NULL,
-  eligible_vehicle_ids  TEXT[]      NOT NULL,
-  selected_vehicle_ids  TEXT[]      NOT NULL,
-  created_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
-  UNIQUE (company_id, quarter)
-);
-```
-
-Insert with `ON CONFLICT (company_id, quarter) DO NOTHING`, then read the row back and return it; reject if its `percent` differs.

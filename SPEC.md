@@ -46,7 +46,7 @@ type SelectionRecord = {
 - `selectForQuarter(store, { companyId, quarter, vehicleIds, percent, seed? }): SelectionRecord`
   - If a record already exists for `(companyId, quarter)`, return it unchanged. The vehicle list may have changed since the first run; that's expected and doesn't change the result.
   - If a record exists but the `percent` is different, throw a conflict error. A different percentage means the caller has a bug.
-  - `store` is a plain `Map` keyed by `${companyId}:${quarter}`. In production the same guarantee comes from a Postgres `UNIQUE (company_id, quarter)` constraint (shown in the README).
+  - `store` is a plain `Map` keyed by `${companyId}:${quarter}`.
 - `verifySelection(record): boolean`: recomputes the pick from `seed`, `eligibleVehicleIds` and `percent`, and compares it with `selectedVehicleIds`.
 
 **CLI:**
@@ -75,7 +75,6 @@ Each criterion needs at least one test that names its ID.
   - a time and space complexity note
   - the edge case: a seed derived from company + quarter would be predictable
   - commit–reveal and public randomness beacon as stronger options
-  - the Postgres DDL with the unique constraint
 
 ## Complexity target
 

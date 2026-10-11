@@ -28,6 +28,36 @@ npm run -s verify -- --record record.json   # prints VALID, exit 0 (INVALID, exi
 
 `-s` silences npm's banner so stdout is clean JSON.
 
+`record.json` looks like this. 8 vehicles at 25% picks `ceil(8 * 25 / 100) = 2`. The seed is random, so your seed and picked vehicles will differ from this example:
+
+```json
+{
+  "companyId": "acme",
+  "quarter": "2026-Q4",
+  "percent": 25,
+  "algorithm": "sha256-rank-v1",
+  "seed": "cc9090ae8dc3c4f1f40310778166ed172b880b35e25bb3dbe7e751a7c6dfc602",
+  "eligibleVehicleIds": ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"],
+  "selectedVehicleIds": ["v5", "v6"],
+  "createdAt": "2026-10-11T08:32:05.856Z"
+}
+```
+
+Tamper with a record and `verify` catches it:
+
+```sh
+sed 's/"percent": 25/"percent": 50/' record.json > tampered.json
+npm run -s verify -- --record tampered.json   # prints INVALID, exit 1
+```
+
+Exit codes: `0` valid, `1` invalid record, `2` bad input (missing flag, bad percent, or a different percent for an existing company and quarter, e.g. `acme:2026-Q4 already selected at 25%, got 30%`).
+
+## Files
+
+- `src/selection.ts`: the algorithm (`computeSelection`), one selection per company and quarter (`selectForQuarter`), and `verifySelection`. No file I/O.
+- `src/cli.ts`: the `select` and `verify` commands; reads the vehicle file and saves records to the `--store` JSON file.
+- `test/`: tests for the algorithm, the CLI, and this README.
+
 Running `select` again with the same company and quarter returns the stored record unchanged, even if `vehicles.txt` changed. A different `--percent` for the same company and quarter is an error. Selections for different companies or quarters are independent, and earlier picks never exclude vehicles.
 
 ## How it works
